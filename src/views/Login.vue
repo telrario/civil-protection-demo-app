@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex align-center justify-center" style="height: 100vh">
     <v-sheet width="400" class="mx-auto">
-      <v-form fast-fail @submit.prevent="login">
+      <v-form fast-fail @submit.prevent="login" :disabled="loading">
         <v-text-field
           v-model="email"
           label="Email"
@@ -14,7 +14,21 @@
         />
         <a href="#" class="text-body-2 font-weight-regular">Forgot Password?</a>
 
-        <v-btn type="submit" color="primary" block class="mt-2">Sign in</v-btn>
+        <v-btn
+          type="submit"
+          color="primary"
+          block
+          class="mt-2"
+          :disabled="loading"
+        >
+          Sign in
+          <template #append>
+            <v-progress-circular
+              v-show="loading"
+              indeterminate
+            />
+          </template>
+        </v-btn>
       </v-form>
     </v-sheet>
   </div>
@@ -33,38 +47,31 @@ import {mapActions} from "pinia";
 export default {
   data() {
     return {
+      loading: false,
       email: 'telmo.riofrio@funiber.org',
       password: 'jok456pe',
     };
   },
   methods: {
     async login() {
-      try{
-        let response = await axios.post('login', {
-          email: this.email,
-          password: this.password,
-        });
+      this.loading = true;
 
-        if(response.data.user){
-          console.info('you are logged in', response);
+      let response = await axios.post('login', {
+        email: this.email,
+        password: this.password,
+      });
 
-          this.store(response.data.user);
+      if(response.data.user){
+        console.info('you are logged in', response);
 
-          await getXSRFToken();
+        this.store(response.data.user);
 
-          this.$router.push('/profile');
-        }
+        await getXSRFToken();
+
+        this.$router.push('/profile');
       }
-      catch (ex){
-        console.error(ex);
 
-        if(ex.response.status === HTTP_CODE_SESSION_EXPIRED){
-          console.warn('session expired new token need to be issued');
-
-          await getXSRFToken();
-          await this.login();
-        }
-      }
+      this.loading = false;
     },
 
     ...mapActions(useSessionStore, ['store'])

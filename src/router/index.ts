@@ -4,8 +4,10 @@ import axios from "axios";
 import {useSessionStore} from "@/store/session";
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://localhost:8080';
+//axios.defaults.baseURL = 'http://localhost:8080';
+axios.defaults.baseURL = 'https://user-service-develop-j5czpbasxq-uc.a.run.app';
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios = axios;
 
 const routes = [
   {
@@ -69,5 +71,5 @@ export const HTTP_CODE_SESSION_EXPIRED = 419;
 export async function getXSRFToken(){
   await axios.get('sanctum/csrf-cookie');
 
-  axios.defaults.headers.common['X-XSRF-TOKEN'] = $cookies.get('XSRF-TOKEN');
+  console.log('session token set');
 }
